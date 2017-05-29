@@ -18,11 +18,19 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private Button btnSearch;
     private EditText txtSearch;
     private String kioskVal;
+    private ArrayList<KioskFinder> kioskFinders;
     private GoogleMap googleMap;
 
     BackgroundConnections bc = new BackgroundConnections();
@@ -99,7 +107,46 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         protected void onPostExecute(String result) {
-            super.onPostExecute(result);
+            kioskFinders = new ArrayList<>();
+
+            if (result == null)
+            {
+            }else
+            {
+                try {
+                    JSONObject jsono = new JSONObject(result);
+                    JSONArray jsonArray = jsono.getJSONArray("KiosKDetails");
+
+                    for (int index = 0; index<jsonArray.length(); index++){
+
+                        JSONObject jsonObject = jsonArray.getJSONObject(index);
+
+                        KioskFinder kiosk = new KioskFinder();
+                        kiosk.setKioskId(jsonObject.getString("kioskId"));
+                        kiosk.setKioskName(jsonObject.getString("kioskName"));
+                        kiosk.setDescription(jsonObject.getString("description"));
+
+                        String location = jsonObject.getString("location");
+                        String [] arr = location.split(",");
+
+                        kiosk.setKioskLat(Double.parseDouble(arr[0]));
+                        kiosk.setKioskLng(Double.parseDouble(arr[1]));
+
+                        kioskFinders.add(kiosk);
+                    }
+
+
+                    showKioskMarkers(kioskFinders);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        private void showKioskMarkers(ArrayList<KioskFinder> kioskFinders) {
+
         }
 
     }
