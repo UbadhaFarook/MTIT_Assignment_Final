@@ -17,6 +17,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.makeText(getApplicationContext(), "Enter a Kiosk name to find location", Toast.LENGTH_SHORT).show();
                 else {
                     kioskVal = value;
-                    //Toast.makeText(getApplicationContext(), "Entered : " + kioskVal, Toast.LENGTH_SHORT).show();
+                    new KioskLocationAsyncTask().execute("http://demo7003449.mockable.io/kioskFind");
                 }
             }
         });
@@ -141,12 +142,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     e.printStackTrace();
                 } catch (NullPointerException e){
                     e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
 
-        private void showKioskMarkers(ArrayList<KioskFinder> kioskFinders) {
+        private void showKioskMarkers(ArrayList<KioskFinder> kioskFinders) throws IOException {
+            googleMap.clear();
+            int count = 0;
+            for (KioskFinder kiosk : kioskFinders){
 
+                double lat = kiosk.getKioskLat();
+                double lng = kiosk.getKioskLng();
+
+                //Toast.makeText(getApplicationContext(), ""+lat+ " , " + lng, Toast.LENGTH_LONG).show();
+
+                if (kiosk.getKioskName().contains(kioskVal) || kiosk.getKioskName().contains(kioskVal.toLowerCase())){
+                    LatLng place = new LatLng(lat, lng);
+                    googleMap.addMarker(new MarkerOptions().position(place)
+                            .title(kiosk.getKioskName().toString()));
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place,18));
+                    count++;
+                }
+            }
+            if (count ==0)
+                Toast.makeText(getApplicationContext(), "Kiosk not available right now!!", Toast.LENGTH_LONG).show();
         }
 
     }
